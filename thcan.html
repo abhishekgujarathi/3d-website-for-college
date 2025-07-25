@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>cannon.js + three.js - basic integration example</title>
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+</head>
+
+<body>
+  <script type="module">
+    import * as CANNON from 'cannon-es'
+    import * as THREE from 'three'
+    import { threeToCannon, ShapeType } from 'three-to-cannon';
+    import { AmbientLight } from 'three'
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+    import CannonDebugger from 'cannon-es-debugger';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls';
+
+    // three.js variables
+    let camera, scene, renderer
+    let mesh
+
+    // cannon.js variables
+    let world
+    let body
+
+
+    let cannonDebugger
+
+    initThree()
+    initCannon()
+    animate()
+
+    function initThree() {
+      // Camera
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100)
+      camera.position.z = 5
+
+      // Scene
+      scene = new THREE.Scene()
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true })
+      renderer.setSize(window.innerWidth, window.innerHeight)
+
+      document.body.appendChild(renderer.domElement)
+
+      window.addEventListener('resize', onWindowResize)
+
+      //ambient light
+      const alight = new AmbientLight(0xffffff)
+      scene.add(alight)
+      const controls = new OrbitControls(camera, renderer.domElement);
+
+      let character
+      const loader = new GLTFLoader()
+      loader.load('/character/rigidTest.gltf',
+        (obj) => {
+          character = obj.scene
+          character.position.y = 0.005
+          // character.scale.set(0.1, 0.1, 0.1)
+          console.log(character);
+          scene.add(character)
+
+          character.traverse(function (child) {
+
+            //Setting the buffer geometry
+            let loadBody = new CANNON.Body({ mass: 0 })
+
+            const result = threeToCannon(character, { type: ShapeType.HULL });
+            const { shape, offset, quaternion } = result;
+            loadBody.addShape(shape, offset, 0);
+            world.addBody(loadBody)
+            loadBody.position.set(0, 0, 0)
+            console.log(loadBody);
+          });
+
+        },
+        (xhr) => {
+          // console.log(xhr)
+        },
+        (err) => {
+          // console.log(err)
+        }
+      )
+
+
+
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+      renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    function initCannon() {
+      world = new CANNON.World()
+      cannonDebugger = new CannonDebugger(scene, world);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate)
+
+      // Step the physics world
+      world.fixedStep()
+      cannonDebugger.update()
+      // Copy coordinates from cannon.js to three.js
+      // mesh.position.copy(body.position)
+      // mesh.quaternion.copy(body.quaternion)
+
+      // Render three.js
+      renderer.render(scene, camera)
+    }
+  </script>
+</body>
+
+</html>

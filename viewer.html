@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A simple example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            max-width: 100vw;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #panorama {
+            width: 100%;
+            height: 90vh;
+            /* border-radius: 50%; */
+        }
+
+        #back {
+            border: 2px solid black;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="back" onclick="back()">Back</button>
+    <div id="panorama"></div>
+    <script>
+        pannellum.viewer('panorama', {
+            "type": "equirectangular",
+            "panorama": "./views/" + localStorage.getItem("viwerImg"),
+            "autoLoad": true,
+            "autoRotate": -8
+        });
+        function back() {
+            window.location.replace("http://localhost:3000/");
+        }
+    </script>
+
+</body>
+
+</html>

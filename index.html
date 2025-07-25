@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite App</title>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div onclick="window.location = '/index.html'"><span class="logo">TFGP</span></div>
+    <div class="nav">
+      <a href="/index.html#aboutus">About Us</a>
+      <a href="/blog.html">Blogs</a>
+      <a href="/contactus.html">Contact Us</a>
+      <a href="/adminLogin.html" id="log">Login</a>
+    </div>
+  </nav>
+  <div id="app">
+    <div id="contain">
+      <div id="can">
+        <button id="strt" onclick="removeElements('can','aboutus')">Start</button>
+      </div>
+      <div id="canvas-container"></div>
+
+      <canvas id="bg">
+      </canvas>
+    </div>
+
+    <div id="aboutus">
+      <span>About Us</span>
+      <div class="aboutus">
+        <div class="parts">
+          <div><span>Introduction</span>
+            <p id="welcome"></p>
+          </div>
+          <div><img src="/img (1).png" alt="" srcset=""></div>
+        </div>
+        <div class="parts">
+          <div><span>VISION</span>
+            <p id="vision">
+            </p>
+          </div>
+          <div>
+            <div><img src="/img (3).png" alt="" srcset=""></div>
+          </div>
+        </div>
+        <div class="parts">
+          <div><span>MISSION</span>
+            <p id="mission">
+              <span id="mission1"></span>
+              <span id="mission2"></span>
+              <span id="mission3">
+              </span>
+            </p>
+          </div>
+          <div>
+            <div><img src="/img (2).png" alt="" srcset=""></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="viewerAsk">
+      <div id="viewerMain">
+        <div id="panorama"></div>
+      </div>
+      <div>
+        <button onclick="makeView()">View</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let crosss;
+    let ee1, ee2;
+    let state = false
+    function removeElements(e1, e2) {
+      var e1 = document.getElementById(e1);
+      if (e1) {
+        ee1 = e1
+        e1.style.display = "none";
+      }
+      var e2 = document.getElementById(e2);
+      if (e2) {
+        ee2 = e2
+        e2.style.display = "none";
+      }
+      state = true
+      const cross = document.createElement('button');
+      cross.style.display = 'inline-block';
+      cross.style.backgroundColor = 'white';
+      cross.style.borderRadius = '50%';
+      cross.style.width = '50px';
+      cross.style.height = '50px';
+      cross.style.transition = '2s';
+      cross.innerHTML = '<img src="cross.png">';
+      cross.id = 'cross'
+      document.querySelector('.nav').innerHTML = ""
+      document.querySelector('.nav').appendChild(cross)
+      // cross.addEventListener('click', function () {
+      cross.onclick = function () {
+        crosss = document.querySelector('#cross');
+        if (state == true) {
+          document.querySelector('.nav').innerHTML = ""
+          document.querySelector('.nav').innerHTML = `<a href="#aboutus">About Us</a>
+          <a href="/blog.html">Blogs</a>
+          <a href="#">Contact Us</a>
+          <a href="/adminLogin.html" id="log">Login</a>`
+          e1.style.display = "flex"
+          e2.style.display = "flex"
+          state = false
+          logOut()
+        }
+      }
+
+    }
+
+    async function getLogin() {
+      let res = await fetch("http://localhost:3001/getLogin")
+      const login = await res.text()
+      return login
+    }
+
+    async function logOut() {
+      let login = await getLogin()
+      if (login === "false") {
+
+      }
+      if (login === "true") {
+        document.querySelector('#log').remove()
+        document.querySelector('.nav').innerHTML = document.querySelector('.nav').innerHTML + `<a href="" id="log" onclick="userLogOut()">LogOut</a>`
+      }
+    }
+    logOut()
+
+    async function userLogOut() {
+      let state = await fetch("http://localhost:3001/logout", { method: "post" })
+      if (state.status === 200) {
+        alert("Logged out")
+      }
+    }
+
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <script type="module" src="/main.js"></script>
+  <script>
+    function makeView() {
+      window.location = "http://localhost:3000/viewer.html"
+    }
+    async function getData() {
+      const res = await fetch("http://localhost:3001/")
+      if (!res.ok) throw new Error("error")
+      const data = await res.json()
+      console.log(data);
+
+      document.querySelector('#welcome').innerHTML = data[0].data
+      document.querySelector('#vision').innerHTML = data[1].data
+      document.querySelector('#mission1').innerHTML = data[2].data
+      document.querySelector('#mission2').innerHTML = data[3].data
+      document.querySelector('#mission3').innerHTML = data[4].data
+    }
+    getData()
+  </script>
+
+</body>
+
+</html>

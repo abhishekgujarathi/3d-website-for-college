@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>cannon.js + three.js - basic integration example</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+</head>
+
+<body>
+
+    <!--<script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>-->
+    <script type="module">
+        // import debug from 'debug'
+        import * as CANNON from 'cannon-es'
+        import * as THREE from 'three'
+        import CannonDebugger from 'cannon-es-debugger';
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+        import { ConvexHull } from 'three/addons/math/ConvexHull';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls';
+        import log from 'loglevel';
+        log.setLevel('error');
+
+        // three.js variables
+        let camera, scene, renderer
+        let mesh
+        let character
+        let mixer
+        let action
+        let walking
+        var pivot
+        let charPos = new THREE.Vector3()
+        let target
+        let c
+        var clock = new THREE.Clock();
+
+        // cannon.js variables
+        let world
+        let body, bbody
+        let charBody
+        let cannonDebugger
+        let groundBody
+
+
+        const keys = {};
+        const rotationSpeed = 0.5;
+        // Define camera offset values
+        let cameraOffset
+        let cameraVerticalOffset = 2;
+
+        // Create the camera
+        let camera2
+
+
+        initThree()
+        initCannon()
+        animate()
+
+        function initThree() {
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 100)
+            camera.position.z = 5
+
+            // Scene
+            scene = new THREE.Scene()
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true })
+            renderer.setSize(window.innerWidth, window.innerHeight)
+
+            const alight = new THREE.AmbientLight(0xffffff)
+            scene.add(alight)
+
+            document.body.appendChild(renderer.domElement)
+            const controls = new OrbitControls(camera, renderer.domElement);
+
+            window.addEventListener('resize', onWindowResize)
+
+
+            // Define camera offset values
+            cameraOffset = new THREE.Vector3(0, 0, -1); // Adjust the offset values according to your preference
+            cameraVerticalOffset = 0.8;
+
+            // Create the camera
+            camera2 = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            scene.add(camera2);
+
+            const loader = new GLTFLoader();
+            let childs = []
+            let childGeometry = []
+            loader.load('/character/walls.gltf', (gltf) => {
+                mesh = gltf.scene;
+                let glTFGeometry
+                console.log(mesh)
+                mesh.traverse(function (child) {
+                    glTFGeometry = child
+                    childs.push(glTFGeometry)
+                });
+                // scene.add(mesh)
+                //base
+                addBody(0)
+                addBody(1)
+            });
+
+
+
+            // character
+            loader.load('/character/test2.gltf',
+                (obj) => {
+                    character = obj.scene
+                    character.position.y = 0.005
+                    character.scale.set(0.1, 0.1, 0.1)
+                    mixer = new THREE.AnimationMixer(obj.scene);
+                    action = mixer.clipAction(obj.animations[0]);
+                    walking = mixer.clipAction(obj.animations[1])
+                    action.play()
+                    scene.add(character)
+                    character.traverse(function (child) {
+                        if (child.isMesh) {
+                            addCharacterBody(child)
+                        }
+                    })
+                },
+                (xhr) => {
+                    // console.log(xhr)
+                },
+                (err) => {
+                    // console.log(err)
+                }
+            )
+            scene.updateMatrixWorld(true)
+
+
+            //controller
+            // Event listeners to track key state
+            document.addEventListener('keydown', (event) => {
+                keys[event.code] = true;
+            });
+
+            document.addEventListener('keyup', (event) => {
+                keys[event.code] = false;
+
+                // Reset velocity when keys are released
+                charBody.velocity.set(0, 0, 0);
+            });
+
+
+        }
+        function handlePlayerControls() {
+            const rotationSpeed = 0.5; // Adjust the rotation speed according to your preference
+            const movementSpeed = 1; // Adjust the movement speed according to your preference
+
+            // Rotation
+            // if (keys['KeyA'] || keys['KeyA']) {
+            if (keys['KeyA']) {
+                charBody.angularVelocity.y = rotationSpeed;
+            }
+            if (keys['KeyD']) {
+                charBody.angularVelocity.y = -rotationSpeed;
+            }
+            // }
+            if (!keys['KeyA'] && !keys['KeyD']) {
+                charBody.angularVelocity.set(0, 0, 0);
+            }
+
+            // Movement in the direction of looking
+            const forward = new CANNON.Vec3(0, 0, -1); // Initial forward direction
+            const direction = new CANNON.Vec3();
+            charBody.quaternion.vmult(forward, direction); // Rotate the forward direction based on player's rotation
+
+            if (keys['KeyW']) {
+                charBody.velocity.copy(direction.scale(-movementSpeed));
+            } else if (keys['KeyS']) {
+                charBody.velocity.copy(direction.scale(movementSpeed));
+            } else {
+                charBody.velocity.set(0, 0, 0);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight
+            camera.updateProjectionMatrix()
+            renderer.setSize(window.innerWidth, window.innerHeight)
+        }
+
+        function initCannon() {
+            world = new CANNON.World()
+            
+
+            cannonDebugger = new CannonDebugger(scene, world);
+
+            // // Create a ground plane
+            const groundShape = new CANNON.Plane();
+            groundBody = new CANNON.Body({ mass: 0 }); // Set mass to 0 to create a static body
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2); // Rotate the ground to be horizontal
+
+            // Add the ground body to the physics world
+            world.addBody(groundBody);
+
+
+            // // Create wall geometry
+            // const wallWidth = 2; // Width of the wall
+            // const wallHeight = 4; // Height of the wall
+            // const wallDepth = 0.1; // Depth of the wall
+
+            // // Create a box shape for the wall
+            // const wallShape = new CANNON.Box(new CANNON.Vec3(wallWidth / 2, wallHeight / 2, wallDepth / 2));
+
+            // // Create a rigid body for the wall
+            // const wallBody = new CANNON.Body({
+            //     mass: 0, // Set mass to 0 to create a static object
+            //     shape: wallShape,
+            // });
+
+            // // Set the position of the wall
+            // wallBody.position.set(0, wallHeight / 2, -5); // Adjust the position as needed
+
+            // // Add the wall body to the physics world
+            // // world.addBody(wallBody);
+
+
+        }
+
+        // Update camera position and look-at target based on player's position and rotation
+        function updateCamera() {
+            const playerPosition = character.position;
+
+            // Calculate the camera position relative to the player
+            const relativeCameraOffset = cameraOffset.clone().applyQuaternion(character.quaternion);
+            const cameraPosition = playerPosition.clone().add(relativeCameraOffset);
+
+            // Adjust camera position vertically
+            cameraPosition.y += cameraVerticalOffset;
+
+            // Set the camera position and look-at target
+            camera2.position.copy(cameraPosition);
+            // camera2.lookAt(playerPosition);
+
+            camera2.lookAt(new THREE.Vector3(playerPosition.x, playerPosition.y + 0.4, playerPosition.z));
+        }
+
+        function animate() {
+            requestAnimationFrame(animate)
+
+            // Step the physics world
+            world.fixedStep()
+
+            // Copy coordinates from cannon.js to three.js
+            handlePlayerControls()
+            cannonDebugger.update()
+
+            // Update camera
+            updateCamera();
+
+            // Update the physics world
+            world.step(1 / 60);
+
+            // Update the character's position in the three.js world
+            character.position.copy(charBody.position);
+            character.quaternion.copy(charBody.quaternion);
+
+
+            // Render three.js
+            renderer.render(scene, camera)
+        }
+
+        function getPolyhedronShape(mesh) {
+            let geometry = mesh
+
+            const position = geometry.attributes.position.array;
+            const index = geometry.index.array;
+
+            const points = [];
+            for (let i = 0; i < position.length; i += 3) {
+                points.push(new CANNON.Vec3(position[i], position[i + 1], position[i + 2]));
+            }
+            const faces = [];
+            for (let i = 0; i < index.length; i += 3) {
+                faces.push([index[i], index[i + 1], index[i + 2]]);
+            }
+
+            return new CANNON.ConvexPolyhedron({ vertices: points, faces });
+        }
+
+        function addBody(i) {
+            console.log(mesh.children[0].children[i]);
+            let glTFGeometry = mesh.children[0].children[i]
+            // Compute the vertices of the model
+            const geometry = glTFGeometry.geometry.clone();
+            geometry.applyMatrix4(mesh.matrixWorld);
+
+            // scene.add(mesh)
+
+            // // Create the rigid body
+            let shape = getPolyhedronShape(geometry)
+            bbody = new CANNON.Body({
+                mass: 0, // Set mass to 0 to make it static
+                shape: shape,
+            });
+            // Add the rigid body to the world
+            world.addBody(bbody);
+            world.queries.push({
+                collisionFilterGroup: groundBody,
+                collisionFilterMask: bbody
+            });
+            world.queries.push({
+                collisionFilterGroup: bbody,
+                collisionFilterMask: groundBody
+            });
+        }
+
+        function addCharacterBody() {
+            charBody = new CANNON.Body({
+                mass: 1, // Set mass to 0 to make it static
+                shape: new CANNON.Cylinder(0.25, 0.25, 0.2, 6),
+            });
+            // Add the rigid body to the world
+            world.addBody(charBody);
+            charBody.velocity.y += 1
+        }
+
+    </script>
+</body>
+
+</html>

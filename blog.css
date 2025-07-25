@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+:root {
+    --ck-color-base-border: #555;
+}
+
+html {
+    position: relative;
+    /* overflow: hidden; */
+}
+
+#editor {
+    border: 1px solid;
+    width: 100%;
+}
+
+.ck-editor {
+    width: 100%;
+}
+
+#body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    font-family: Helvetica;
+}
+
+input {
+    border: 1px solid rgb(204 206 209);
+    font-size: 1.3rem;
+}
+
+#title {
+    font-size: 1.3rem;
+    color: rgb(81, 81, 82);
+    font-weight: 700;
+}
+
+#sub {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+#btnbg{
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    width: 5.3rem;
+    height: 2.3rem;
+}
+
+#submit {
+    font-size: 1rem;
+    border-radius: 0;
+    border: none;
+    background-color: white;
+    padding: 7px 15px;
+    align-self: flex-end;
+    width: 5rem;
+    height: 2rem;
+    position: absolute;
+    transform: translate(-0.15rem,-0.15rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#submit span{
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    font-weight: 900;
+    padding: 0%;
+    margin: 0%;
+}
+
+#blog {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    font-weight: 900;
+    text-align: center;
+}
+
+#navv{
+    margin-bottom: 80px;
+}
+
+body {
+    box-sizing: border-box;
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    height: auto;
+    padding: 30px;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+#form {
+    width: 100%;
+    background: white;
+    border-radius: 10px;
+    padding: 50px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+    color: #212121;
+}
+
+#blogs{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#blogInd{
+    z-index: 99;
+    width: 80vw;
+    height: max-content;
+    background-color: white;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px 30px;
+    font-weight: 600;
+    color: #828282;
+    
+}
+
+#titleTxt {
+    color: black;
+    font-weight: 600;
+    font-size: larger;
+    padding: 3px 5px;
+    padding-bottom: 8px;
+    text-align: center;
+    border-bottom:1px solid #555;
+}
+
+#titleTxtt{
+    color: black;
+    font-weight: 600;
+    font-size: medium;
+    padding: 3px 5px;
+}
+
+#main{
+    position: relative;
+    /* top: 130px; */
+}
+#cancel{
+    position: absolute;
+    background-color: white;
+    font-weight: 900;
+    font-size: 1rem;
+    padding: 5px 7px;
+    border: 2px solid #555;
+    right: 150px;
+}
+
+#duBtn{
+    padding: 5px 7px;
+    background-color: white;
+    color: #212121;
+    font-weight: 700;
+}
+
+#duBtn:hover{
+    background-color: rgb(140, 140, 140);
+    color: #000000;
+}

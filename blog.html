@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFGP Blog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="blog.css">
+  <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+</head>
+
+<body>
+  <div id="navv">
+    <nav class="navbar">
+      <div onclick="window.location = '/index.html'"><span class="logo">TFGP</span></div>
+      <div class="nav">
+        <a href="/index.html#aboutus">About Us</a>
+        <a href="/blog.html">Blogs</a>
+        <a href="/contactus.html">Contact Us</a>
+        <a href="/adminLogin.html" id="log">Login</a>
+      </div>
+    </nav>
+  </div>
+  <div id="body">
+    <div id="main">
+      <div id="form">
+        <div>
+          <h1 id="blog">Add New Blog</h1>
+        </div>
+        <div id="title">
+          <span>Title</span>
+          <input type="text" name="text" id="titleTxtt">
+        </div>
+        <div id="editor"></div>
+        <div id="sub">
+          <div id="btnbg"></div>
+          <button type="submit" id="submit"><span>Submit</span></button>
+        </div>
+      </div>
+      <div id="blogs">
+
+      </div>
+    </div>
+  </div>
+  <script>
+    window.editor = null
+    window.submit = true
+
+    ClassicEditor
+      .create(document.querySelector('#editor'), {
+        removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload', 'MediaEmbed']
+      })
+      .then(editor => {
+        window.editor = editor
+      })
+      .catch(error => {
+        console.error(error);
+      })
+
+    async function userLogOut() {
+      let state = await fetch("http://localhost:3001/logout", { method: "post" })
+      if (state.status === 200) {
+        alert("Logged out")
+      }
+    }
+
+    async function deleteBlog(bid) {
+      let idd = document.querySelector(`[key="${bid}"]`).getAttribute("key")
+      let del = await fetch("http://localhost:3001/deleteBlog", {
+        method: "post",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: idd
+        })
+      })
+      if (del.status === 200) {
+        console.log("Blog deleted successfully");
+        window.location.reload();
+      }
+    }
+
+    async function updateBlog(bid) {
+      let idd = document.querySelector(`[key="${bid}"]`)
+      let title = document.querySelector('#titleTxtt')
+      let text = document.getElementsByClassName("ck-editor__editable")[0]
+
+      let res = await fetch("http://localhost:3001/blog/" + bid)
+      let blog = await res.json()
+      blog = blog[0]
+
+      title.value = blog.title
+      window.editor.data.set(blog.blog)
+
+      let buttons = document.querySelector("#sub")
+      buttons.innerHTML = buttons.innerHTML + `<button type="submit" id="cancel" onclick="window.location.reload()"><span>Cancel</span></button>`
+      window.submit = false
+      if (window.submit == false) {
+        document.querySelector("#submit").addEventListener("click", function () {
+          window.submit = true
+          fetch("http://localhost:3001/blogUp", {
+            method: "post",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              id:bid,
+              title: title.value,
+              blog: text.innerHTML.toString()
+            })
+          })
+          .then(function (r) {
+            window.location.reload()
+          })
+        });
+      }
+    }
+
+  </script>
+  <script type="module" src="/blog.js"></script>
+</body>
+
+</html>
