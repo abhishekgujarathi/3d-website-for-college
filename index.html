@@ -169,7 +169,9 @@
     <script type="module" src="/main.js"></script>
     <script>
       function makeView() {
-        window.location = "http://localhost:3000/viewer.html";
+        const currentUrl = window.location.origin + window.location.pathname;
+        const newUrl = currentUrl.replace(/\/?$/, "/viewer.html"); // Ensures single trailing slash
+        window.location.href = newUrl;
       }
       async function getData() {
         const res = await fetch("http://localhost:3001/");
