@@ -183,7 +183,38 @@
         document.querySelector("#mission2").innerHTML = data[3].data;
         document.querySelector("#mission3").innerHTML = data[4].data;
       }
+<<<<<<< HEAD
       getData();
     </script>
   </body>
+=======
+    }
+
+  </script>
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <script type="module" src="/main.js"></script>
+  <script>
+    function makeView() {
+      window.location = "http://localhost:3000/viewer.html"
+    }
+    async function getData() {
+      const res = await fetch("http://localhost:3001/")
+      if (!res.ok) throw new Error("error")
+      const data = await res.json()
+      console.log(data);
+
+      document.querySelector('#welcome').innerHTML = data[0].data
+      document.querySelector('#vision').innerHTML = data[1].data
+      document.querySelector('#mission1').innerHTML = data[2].data
+      document.querySelector('#mission2').innerHTML = data[3].data
+      document.querySelector('#mission3').innerHTML = data[4].data
+    }
+    getData()
+  </script>
+
+</body>
+
+>>>>>>> dd62e5b8ab391e28e70ab83f617d2943245ce718
 </html>
