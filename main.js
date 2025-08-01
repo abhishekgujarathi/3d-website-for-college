@@ -44,12 +44,18 @@ let cameraVerticalOffset = -1;
 let camera2
 
 
-initThree()
-initCannon()
-animate()
 let a = document.querySelector("#viewerAsk")
 a.style.display = "none"
 
+// explicitly setting
+if (localStorage.getItem("viwerState") === null) {
+    localStorage.setItem("viwerState", "false");
+}
+
+
+initThree()
+initCannon()
+animate()
 
 function initThree() {
     // Camera
@@ -116,6 +122,7 @@ function initThree() {
             action.play()
             scene.add(character)
             helper = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+            console.log(helper)
             helper.setFromObject(character);
             character.traverse(function (child) {
                 if (child.isMesh) {
@@ -806,12 +813,12 @@ function addCharacterBody() {
 let aViwer = false
 let rViwer = false
 async function addViwer(img) {
+    console.log("addviewer", localStorage)
     if (localStorage.getItem("viwerState") === "false") {
         let a = document.querySelector("#viewerAsk")
-        // if (document.querySelector('.pnlm-render-container')) {
-        //     document.querySelector('.pnlm-render-container').remove()
-        // }
-        // document.querySelector("#contain").appendChild(a)
+        if (document.querySelector('.pnlm-render-container')) {
+            document.querySelector('.pnlm-render-container').remove()
+        }
 
         pano = await pannellum.viewer('panorama', {
             "type": "equirectangular",
@@ -819,17 +826,19 @@ async function addViwer(img) {
             "autoLoad": true,
             "autoRotate": -2
         });
+
+
         localStorage.setItem("viwerImg", img)
-        // pannellum.viewer.('panorama', {
-        //     "type": "equirectangular",
-        //     "panorama": "./views/" + img,
-        //     "autoLoad": true,
-        //     "autoRotate": -8
-        // });
+            // pannellum.viewer('panorama', {
+            //     "type": "equirectangular",
+            //     "panorama": "./views/" + img,
+            //     "autoLoad": true,
+            //     "autoRotate": -8
+            // });
 
 
         let tmp = document.querySelectorAll(".pnlm-about-msg")
-        console.log(tmp);
+        console.log("tmpppp", tmp);
 
         tmp.forEach(element => {
             element.remove()
@@ -843,61 +852,80 @@ async function addViwer(img) {
 function removeViwer() {
     if (localStorage.getItem("viwerState") === "true") {
         try {
-            // let vv = pannellum.viewer("panorama").getScene()
-            pano.destroy()
-        } catch (e) { console.log(e); }
-        let a = document.querySelector("#viewerAsk")
-        a.style.display = "none"
-        a.style.height = "min-content"
-        localStorage.setItem("viwerState", false)
-        console.log("remove");
+            if (pano && pano.destroy) pano.destroy();
+        } catch (e) {
+            console.log("Error destroying pano:", e);
+        }
 
+        let a = document.querySelector("#viewerAsk");
+        a.style.display = "none";
+        a.style.height = "min-content";
+
+        localStorage.setItem("viwerState", "false");
+        console.log("Viewer removed");
     }
 }
+
 
 async function detectCollision() {
     if (helper.intersectsBox(viewersBB[0])) {
         if (flagInter === false) {
             addViwer("views (1).jpg")
+            flagInter = true;
+            console.log(helper, "1")
         }
     }
 
     else if (helper.intersectsBox(viewersBB[1])) {
         if (flagInter === false) {
             await addViwer("views (2).jpg")
+            console.log(helper, "2")
+            flagInter = true;
         }
     }
     else if (helper.intersectsBox(viewersBB[2])) {
         if (flagInter === false) {
             await addViwer("views (3).jpg")
+            flagInter = true;
+            console.log(helper, "3")
         }
     }
     else if (helper.intersectsBox(viewersBB[3])) {
         if (flagInter === false) {
             await addViwer("views (4).jpg")
+            flagInter = true;
+            console.log(helper, "4")
         }
     }
     else if (helper.intersectsBox(viewersBB[4])) {
         if (flagInter === false) {
             await addViwer("views (5).jpg")
+            console.log(helper, "5")
+            flagInter = true;
         }
     }
 
     else if (helper.intersectsBox(viewersBB[5])) {
         if (flagInter === false) {
+            await addViwer("views (6).jpg")
+            flagInter = true;
+            console.log(helper, "6")
+        }
+    }
+    else if (helper.intersectsBox(viewersBB[6])) {
+        if (flagInter === false) {
             await addViwer("views (7).jpg")
+            console.log(helper, "7")
+            flagInter = true;
+        }
+    } else {
+        // No intersections, so remove viewer if it's displayed
+        if (flagInter === true) {
+            removeViwer()
+            flagInter = false;
         }
     }
 
-    else if (helper.intersectsBox(viewersBB[6])) {
-        if (flagInter === false) {
-            await addViwer("views (8).jpg")
-        }
-    }
-    else {
-        flagInter = false
-        removeViwer()
-    }
 }
 // }
 
