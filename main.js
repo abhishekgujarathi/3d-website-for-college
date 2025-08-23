@@ -244,16 +244,19 @@ function handlePlayerControls() {
 
     // Rotation
     // if (keys['KeyA'] || keys['KeyA']) {
-    if (keys['KeyA']) {
+    if (keys['KeyA'] || keys['ArrowLeft']) {
         // charBody.angularDamping = 0;
         charBody.angularVelocity.y = rotationSpeed;
         // charBody.angularDamping = 1;
     }
-    if (keys['KeyD']) {
+    if (keys['KeyD'] || keys['ArrowRight']) {
         charBody.angularVelocity.y = -rotationSpeed;
     }
     // }
     if (!keys['KeyA'] && !keys['KeyD']) {
+        charBody.angularVelocity.set(0, 0, 0);
+    }
+    if (!keys['ArrowLeft'] && !keys['ArrowRight']) {
         charBody.angularVelocity.set(0, 0, 0);
     }
 
@@ -262,11 +265,11 @@ function handlePlayerControls() {
     const direction = new CANNON.Vec3();
     charBody.quaternion.vmult(forward, direction); // Rotate the forward direction based on player's rotation
 
-    if (keys['KeyW']) {
+    if (keys['KeyW'] || keys['ArrowUp']) {
         charBody.velocity.copy(direction.scale(-movementSpeed));
         action.stop()
         walking.play()
-    } else if (keys['KeyS']) {
+    } else if (keys['KeyS'] || keys['ArrowDown']) {
         charBody.velocity.copy(direction.scale(movementSpeed));
         walking.play()
         action.stop()
