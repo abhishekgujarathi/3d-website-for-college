@@ -261,12 +261,10 @@ function handlePlayerControls() {
         charBody.angularVelocity.y = -rotationSpeed;
     }
     // }
-    if (!keys['KeyA'] && !keys['KeyD']) {
+    if (!keys['KeyA'] && !keys['ArrowLeft'] && !keys['KeyD'] && !keys['ArrowRight']) {
         charBody.angularVelocity.set(0, 0, 0);
     }
-    if (!keys['ArrowLeft'] && !keys['ArrowRight']) {
-        charBody.angularVelocity.set(0, 0, 0);
-    }
+
 
     // Movement in the direction of looking
     const forward = new CANNON.Vec3(0, 0, -1); // Initial forward direction
@@ -840,12 +838,12 @@ async function addViwer(img) {
 
 
         localStorage.setItem("viwerImg", img)
-            // pannellum.viewer('panorama', {
-            //     "type": "equirectangular",
-            //     "panorama": "./views/" + img,
-            //     "autoLoad": true,
-            //     "autoRotate": -8
-            // });
+        // pannellum.viewer('panorama', {
+        //     "type": "equirectangular",
+        //     "panorama": "./views/" + img,
+        //     "autoLoad": true,
+        //     "autoRotate": -8
+        // });
 
 
         let tmp = document.querySelectorAll(".pnlm-about-msg")
