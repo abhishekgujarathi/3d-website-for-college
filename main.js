@@ -244,12 +244,20 @@ function handlePlayerControls() {
 
     // Rotation
     // if (keys['KeyA'] || keys['KeyA']) {
-    if (keys['KeyA'] || keys['ArrowLeft']) {
+    if (keys['KeyA']) {
         // charBody.angularDamping = 0;
         charBody.angularVelocity.y = rotationSpeed;
         // charBody.angularDamping = 1;
     }
-    if (keys['KeyD'] || keys['ArrowRight']) {
+    else if (keys['ArrowLeft']) {
+        // charBody.angularDamping = 0;
+        charBody.angularVelocity.y = rotationSpeed;
+        // charBody.angularDamping = 1;
+    }
+    if (keys['KeyD']) {
+        charBody.angularVelocity.y = -rotationSpeed;
+    }
+    else if (keys['ArrowRight']) {
         charBody.angularVelocity.y = -rotationSpeed;
     }
     // }
